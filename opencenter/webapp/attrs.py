@@ -27,7 +27,7 @@ import flask
 
 from opencenter.db.api import api_from_models
 from opencenter.webapp import generic
-
+from opencenter.db.exceptions import IdNotFound
 
 object_type = 'attrs'
 singular_object_type = generic.singularize(object_type)
@@ -52,6 +52,24 @@ def create():
     data = flask.request.json
 
     model_object = None
+
+
+    # Check that the node_id passed in refers to a real node,
+    # this allows us to return a more informative response than generic 500.
+
+    try:
+        api._model_get_by_id('nodes', data['node_id'])
+    except KeyError:
+        # node_id not present in request
+        return generic.http_badrequest(msg='Key node_id is required. '
+                                           'Received '
+                                       'data: %s' % str(data))
+    except IdNotFound:
+        # Invalid ID specified
+        return generic.http_notfound(
+            msg='Node %s not found.' % data['node_id']
+        )
+
 
     if 'node_id' in data and 'key' in data:
         old_attr = api._model_get_first_by_query(
