@@ -283,6 +283,19 @@ class Nodes(JsonRenderer, Base):
                                            'node_id=%d' % self.id)])
 
 
+@event.listens_for(Nodes, 'before_delete')
+def node_delete_notify_agent(mapper, connection, target):
+    """If there is an agent registered for this node,
+    create a task that notifies the agent to shut down."""
+    if db_api.node_get_first_by_query(
+            'id=%s and "agent" in facts.backends' % target.id):
+        db_api.task_create({
+            'action': 'opencenter_agent_quit',
+            'node_id': target.id,
+            'payload': {}
+        })
+
+
 @event.listens_for(Nodes, 'after_delete')
 def node_cascade_delete(mapper, connection, target):
     node_id = target.id
