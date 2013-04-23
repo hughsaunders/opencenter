@@ -292,6 +292,9 @@ def node_cascade_delete(mapper, connection, target):
     for attr in Attrs.query.filter_by(node_id=node_id):
         session.delete(attr)
 
+    for task in Tasks.query.filter_by(node_id=node_id):
+        task.delete(attr)
+
 
 class Adventures(JsonRenderer, Base):
     __tablename__ = 'adventures'
