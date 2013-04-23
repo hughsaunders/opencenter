@@ -61,9 +61,9 @@ def create():
         api._model_get_by_id('nodes', data['node_id'])
     except KeyError:
         # node_id not present in request
-        return generic.http_badrequest(msg='Key node_id is required. '
-                                           'Received '
-                                       'data: %s' % str(data))
+        return generic.http_badrequest(
+            msg='Key node_id is required. Received data: ' % str(data)
+        )
     except IdNotFound:
         # Invalid ID specified
         return generic.http_notfound(
